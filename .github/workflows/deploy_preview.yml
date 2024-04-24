@@ -16,5 +16,7 @@ jobs:
   deploy:
     uses: ./.github/workflows/deploy_job.yml
     secrets: inherit
+    needs:
+      - build
     with:
       environment: "preview"
