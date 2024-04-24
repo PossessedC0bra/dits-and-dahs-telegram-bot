@@ -1,0 +1,89 @@
+name: dits-and-dahs-telegram-bot
+version: 0.1.0
+github: "possessedc0bra/dits-and-dahs"
+license: BSD3
+author: "Yannick Koller"
+maintainer: "koller.yannick@gmail.com"
+copyright: "2023 Yannick Koller"
+
+description: Please see the README on GitHub at <https://github.com/possessedc0bra/dits-and-dahs#readme>
+
+tested-with: GHC == 9.6.4
+
+ghc-options:
+  - -Wall
+  - -Wcompat
+  - -Widentities
+  - -Wincomplete-record-updates
+  - -Wincomplete-uni-patterns
+  - -Wmissing-export-lists
+  - -Wmissing-home-modules
+  - -Wpartial-fields
+  - -Wredundant-constraints
+
+default-extensions:
+  - DataKinds
+  - DeriveGeneric
+  - DerivingStrategies
+  - LambdaCase
+  - MultiWayIf
+  - NamedFieldPuns
+  - NumericUnderscores
+  - OverloadedStrings
+  - TupleSections
+  - TypeApplications
+  - TypeOperators
+
+library:
+  source-dirs: src
+  dependencies:
+    - base
+    - aeson
+    - text
+    - servant
+    - servant-server
+
+executables:
+  bootstrap:
+    main: Main.hs
+    source-dirs: app/aws-lambda
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -O2
+      - -with-rtsopts=-N
+      - -static
+    cc-options: -static
+    ld-options: -static -pthread
+    dependencies:
+      - dits-and-dahs-telegram-bot
+      - base
+      - hal
+      - wai-handler-hal
+
+  main:
+    main: Main.hs
+    source-dirs: app
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -O2
+      - -with-rtsopts=-N
+    dependencies:
+      - dits-and-dahs-telegram-bot
+      - base
+      - warp
+      - dotenv
+      - bytestring
+
+tests:
+  dits-and-dahs-test:
+    main: Spec.hs
+    source-dirs: test
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - dits-and-dahs-telegram-bot
+      - base

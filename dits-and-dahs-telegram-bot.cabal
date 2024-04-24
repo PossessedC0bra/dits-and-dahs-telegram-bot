@@ -1,0 +1,138 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.36.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           dits-and-dahs-telegram-bot
+version:        0.1.0
+description:    Please see the README on GitHub at <https://github.com/possessedc0bra/dits-and-dahs#readme>
+homepage:       https://github.com/possessedc0bra/dits-and-dahs#readme
+bug-reports:    https://github.com/possessedc0bra/dits-and-dahs/issues
+author:         Yannick Koller
+maintainer:     koller.yannick@gmail.com
+copyright:      2023 Yannick Koller
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+tested-with:
+    GHC == 9.6.4
+
+source-repository head
+  type: git
+  location: https://github.com/possessedc0bra/dits-and-dahs
+
+library
+  exposed-modules:
+      API
+      Data.Aeson.Utilities.Options
+      Telegram.Bot.API.Types.Chat
+      Telegram.Bot.API.Types.EntityType
+      Telegram.Bot.API.Types.Message
+      Telegram.Bot.API.Types.MessageEntity
+      Telegram.Bot.API.Types.Update
+      Telegram.Bot.API.Types.User
+  other-modules:
+      Paths_dits_and_dahs_telegram_bot
+  hs-source-dirs:
+      src
+  default-extensions:
+      DataKinds
+      DeriveGeneric
+      DerivingStrategies
+      LambdaCase
+      MultiWayIf
+      NamedFieldPuns
+      NumericUnderscores
+      OverloadedStrings
+      TupleSections
+      TypeApplications
+      TypeOperators
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      aeson
+    , base
+    , servant
+    , servant-server
+    , text
+  default-language: Haskell2010
+
+executable bootstrap
+  main-is: Main.hs
+  other-modules:
+      Paths_dits_and_dahs_telegram_bot
+  hs-source-dirs:
+      app/aws-lambda
+  default-extensions:
+      DataKinds
+      DeriveGeneric
+      DerivingStrategies
+      LambdaCase
+      MultiWayIf
+      NamedFieldPuns
+      NumericUnderscores
+      OverloadedStrings
+      TupleSections
+      TypeApplications
+      TypeOperators
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -O2 -with-rtsopts=-N -static
+  cc-options: -static
+  ld-options: -static -pthread
+  build-depends:
+      base
+    , dits-and-dahs-telegram-bot
+    , hal
+    , wai-handler-hal
+  default-language: Haskell2010
+
+executable main
+  main-is: Main.hs
+  other-modules:
+      Paths_dits_and_dahs_telegram_bot
+  hs-source-dirs:
+      app
+  default-extensions:
+      DataKinds
+      DeriveGeneric
+      DerivingStrategies
+      LambdaCase
+      MultiWayIf
+      NamedFieldPuns
+      NumericUnderscores
+      OverloadedStrings
+      TupleSections
+      TypeApplications
+      TypeOperators
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -O2 -with-rtsopts=-N
+  build-depends:
+      base
+    , bytestring
+    , dits-and-dahs-telegram-bot
+    , dotenv
+    , warp
+  default-language: Haskell2010
+
+test-suite dits-and-dahs-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_dits_and_dahs_telegram_bot
+  hs-source-dirs:
+      test
+  default-extensions:
+      DataKinds
+      DeriveGeneric
+      DerivingStrategies
+      LambdaCase
+      MultiWayIf
+      NamedFieldPuns
+      NumericUnderscores
+      OverloadedStrings
+      TupleSections
+      TypeApplications
+      TypeOperators
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base
+    , dits-and-dahs-telegram-bot
+  default-language: Haskell2010

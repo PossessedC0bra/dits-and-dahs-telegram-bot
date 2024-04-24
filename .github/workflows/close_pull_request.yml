@@ -1,0 +1,54 @@
+name: "Close PR"
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  destroy:
+    name: "Teardown PR Environment"
+    runs-on: ubuntu-latest
+    env:
+      TF_IN_AUTOMATION: true
+      WORKSPACE: pr-${{ github.event.number }}
+      AWS_ACCESS_KEY_ID: ${{ vars.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    defaults:
+      run:
+        working-directory: ./terraform/environments/pr
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Setup Terraform"
+        uses: hashicorp/setup-terraform@v3
+        with:
+          cli_config_credentials_token: ${{ secrets.TERRAFORM_API_TOKEN }}
+
+      - name: "Terraform init"
+        run: terraform init
+
+      - name: "Select PR workspace"
+        run: terraform workspace select ${{ env.WORKSPACE }}
+
+      - name: "Create empty lambda function payload"
+        run: |
+          mkdir ./files
+          touch ./files/bootstrap
+
+      - name: "Terraform destroy"
+        run: terraform destroy -auto-approve
+        env:
+          TF_VAR_environment_suffix: ${{ github.event.number }}
+          TF_VAR_telegram_bot_secret_token: ${{ secrets.TELEGRAM_BOT_SECRET_TOKEN }}
+
+      - name: "Delete PR workspace"
+        run: |
+          terraform workspace select default
+          terraform workspace delete ${{ env.WORKSPACE }}
