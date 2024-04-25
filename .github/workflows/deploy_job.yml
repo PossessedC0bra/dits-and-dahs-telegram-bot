@@ -15,12 +15,12 @@ jobs:
       name: ${{ inputs.environment }}
       url: ${{ vars.TELEGRAM_BOT_URL }}
     env:
-      TF_WORKSPACE: ${{ inputs.environment }}
+      TF_WORKSPACE: ${{ vars.TERRAFORM_ENVIRONMENT }}
       AWS_ACCESS_KEY_ID: ${{ vars.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     defaults:
       run:
-        working-directory: ./terraform/environments/${{ vars.TERRAFORM_DIRECTORY }}
+        working-directory: ./terraform/environments/${{ vars.TERRAFORM_ENVIRONMENT }}
     steps:
       - uses: actions/checkout@v4
 
@@ -28,7 +28,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: "bootstrap"
-          path: ./terraform/environments/${{ vars.TERRAFORM_DIRECTORY }}/files
+          path: ./terraform/environments/${{ vars.TERRAFORM_ENVIRONMENT }}/files
 
       - name: "Setup Terraform"
         uses: hashicorp/setup-terraform@v3
