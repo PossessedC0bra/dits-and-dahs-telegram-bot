@@ -54,4 +54,4 @@ jobs:
           TELEGRAM_BOT_TOKEN: secrets.TELEGRAM_BOT_TOKEN
         if: "${{ env.TELEGRAM_BOT_TOKEN != '' }}"
         run: |
-          curl -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/setWebhook?secret_token=${{ secrets.TELEGRAM_BOT_SECRET_TOKEN }}&url=${{ steps.output.outputs.webhook_url }}
+          curl -v -X POST -G "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/setWebhook" --data-urlencode "url=${{ steps.output.outputs.webhook_url }}" --data-urlencode "secret_token=${{ secrets.TELEGRAM_BOT_SECRET_TOKEN }}"
