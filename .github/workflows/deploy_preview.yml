@@ -19,4 +19,4 @@ jobs:
     needs:
       - build
     with:
-      environment: "preview"
+      environment: "Preview"

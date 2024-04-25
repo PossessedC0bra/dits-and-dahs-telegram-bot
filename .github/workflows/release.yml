@@ -19,4 +19,4 @@ jobs:
       - build
     secrets: inherit
     with:
-      environment: "prod"
+      environment: "Production"
