@@ -30,8 +30,10 @@ library
       Telegram.Bot.API.Types.EntityType
       Telegram.Bot.API.Types.Message
       Telegram.Bot.API.Types.MessageEntity
+      Telegram.Bot.API.Types.SendMessagePayload
       Telegram.Bot.API.Types.Update
       Telegram.Bot.API.Types.User
+      Telegram.Bot.API.WebhookResponse
   other-modules:
       Paths_dits_and_dahs_telegram_bot
   hs-source-dirs:
