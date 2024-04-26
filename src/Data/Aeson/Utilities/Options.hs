@@ -1,6 +1,7 @@
-module Data.Aeson.Utilities.Options (module Data.Aeson.Utilities.Options) where
+module Data.Aeson.Utilities.Options (reservedKeywordFieldRenameOptions, constructorCamelToSnakeCaseOptions, constructorLowercaseFirstOptions) where
 
 import Data.Aeson (Options (..), camelTo2, defaultOptions)
+import Data.Char (toLower)
 
 reservedKeywordFieldRenameOptions :: Options
 reservedKeywordFieldRenameOptions = defaultOptions {fieldLabelModifier = reservedKeywordFieldRename}
@@ -14,3 +15,10 @@ constructorCamelToSnakeCaseOptions = defaultOptions {constructorTagModifier = ca
 
 camelToSnake :: String -> String
 camelToSnake = camelTo2 '_'
+
+constructorLowercaseFirstOptions :: Options
+constructorLowercaseFirstOptions = defaultOptions {constructorTagModifier = lowercaseFirstCharacter}
+
+lowercaseFirstCharacter :: String -> String
+lowercaseFirstCharacter (x : xs) = toLower x : xs
+lowercaseFirstCharacter [] = []
