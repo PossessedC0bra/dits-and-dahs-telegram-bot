@@ -64,8 +64,8 @@ jobs:
           commenter_input: ${{ format('{0}{1}', steps.fmt.outputs.stdout, steps.fmt.outputs.stderr) }}
           commenter_exitcode: ${{ steps.fmt.outputs.exitcode }}
 
-      - name: Select or create workspace
-        run: terraform workspace select -or-create $TF_WORKSPACE
+      - name: Ensure terraform workspace exists
+        run: terraform workspace new $TF_WORKSPACE || true
 
       - name: Terraform init
         id: init

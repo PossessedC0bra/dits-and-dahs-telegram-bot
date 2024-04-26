@@ -36,8 +36,8 @@ jobs:
         with:
           cli_config_credentials_token: ${{ secrets.TERRAFORM_API_TOKEN }}
 
-      - name: Select or create workspace
-        run: terraform workspace select -or-create $TF_WORKSPACE
+      - name: Ensure terraform workspace exists
+        run: terraform workspace new $TF_WORKSPACE || true
 
       - name: "Terraform init"
         run: terraform init
