@@ -16,7 +16,6 @@ jobs:
       url: ${{ vars.TELEGRAM_BOT_URL }}
     env:
       TF_IN_AUTOMATION: true
-      TF_WORKSPACE: ${{ vars.TERRAFORM_ENVIRONMENT }}
       AWS_ACCESS_KEY_ID: ${{ vars.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     defaults:
@@ -36,11 +35,11 @@ jobs:
         with:
           cli_config_credentials_token: ${{ secrets.TERRAFORM_API_TOKEN }}
 
-      - name: Ensure terraform workspace exists
-        run: terraform workspace new $TF_WORKSPACE || true
-
       - name: "Terraform init"
         run: terraform init
+
+      - name: Select or create terraform workspace
+        run: terraform workspace select -or-create ${{ vars.TERRAFORM_ENVIRONMENT }}
 
       - name: "Terraform apply"
         id: apply

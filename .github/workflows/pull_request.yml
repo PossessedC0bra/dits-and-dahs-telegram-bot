@@ -31,7 +31,6 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       TF_IN_AUTOMATION: true
-      TF_WORKSPACE: pr-${{ github.event.number }}
       AWS_ACCESS_KEY_ID: ${{ vars.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     defaults:
@@ -64,9 +63,6 @@ jobs:
           commenter_input: ${{ format('{0}{1}', steps.fmt.outputs.stdout, steps.fmt.outputs.stderr) }}
           commenter_exitcode: ${{ steps.fmt.outputs.exitcode }}
 
-      - name: Ensure terraform workspace exists
-        run: terraform workspace new $TF_WORKSPACE || true
-
       - name: Terraform init
         id: init
         run: terraform init
@@ -78,6 +74,9 @@ jobs:
           commenter_type: init
           commenter_input: ${{ format('{0}{1}', steps.init.outputs.stdout, steps.init.outputs.stderr) }}
           commenter_exitcode: ${{ steps.init.outputs.exitcode }}
+
+      - name: Select or create terraform workspace
+        run: terraform workspace select -or-create pr-${{ github.event.number }}
 
       - name: Terraform validate
         id: validate
