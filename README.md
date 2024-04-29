@@ -43,4 +43,6 @@ gitGraph TB:
 
 ## Infrastructure
 
-Infrastructure for the Bot is automatically provisioned using Terraform and GitHub Actions Workflows. As mentioned above there are 2 permanent environments, namely `Production` and `Preview` which are connected to Telegrams Bot API. The ephemeral PR environments are not connected to the Telegram Bot API as it would required a new Bot per PR environment which is hard to achieve as provisioning a Telegram Bot is hardly automatically obtainable. These deployments are also mainly intended for developer testing which does not necessarily require a connection to the Telegram Bot API.
+Infrastructure for the Bot is automatically provisioned using Terraform and GitHub Actions Workflows. As mentioned above there are 2 permanent environments, namely `Production` and `Preview` which are connected to Telegrams Bot API.
+
+Ephemeral PR environments are not connected to the Telegram Bot API as it would required a new Bot per PR environment which is hard to achieve as provisioning a Telegram Bot is hardly automatically obtainable. These deployments are also mainly intended for developer testing which does not necessarily require a connection to the Telegram Bot API.
