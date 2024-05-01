@@ -25,13 +25,13 @@ type UpdatesAPI =
 
 server :: Server UpdatesAPI
 server = handleUpdate
-
+  
 handleUpdate :: String -> Update -> Handler (WebhookResponse SendMessagePayload)
 handleUpdate secretToken update = do
   configuredSecretToken <- liftIO $ getEnv "SECRET_TOKEN"
 
   if secretToken == configuredSecretToken
-    then return (WebhookResponse Method.SendMessage SendMessagePayload {chat_id = getChatId update, text = "Hello, world!"})
+    then return (WebhookResponse Method.SendMessage SendMessagePayload {chat_id = getChatId update, text = "Sali du!"})
     else throwError err401
 
 getChatId :: Update -> Int
