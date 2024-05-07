@@ -1,7 +1,10 @@
 module API (app) where
 
 import Control.Monad.IO.Class (MonadIO (liftIO))
+import Data.Maybe (fromMaybe)
 import Data.Proxy (Proxy (..))
+import Data.Text (Text)
+import DitsAndDahs.Bot (convertText)
 import Servant (Handler, Strict, throwError)
 import Servant.API (Header', JSON, Post, ReqBody, Required, type (:>))
 import Servant.Server (Application, Server, err401, serve)
@@ -25,16 +28,20 @@ type UpdatesAPI =
 
 server :: Server UpdatesAPI
 server = handleUpdate
-  
+
 handleUpdate :: String -> Update -> Handler (WebhookResponse SendMessagePayload)
 handleUpdate secretToken update = do
   configuredSecretToken <- liftIO $ getEnv "SECRET_TOKEN"
-
   if secretToken == configuredSecretToken
-    then return (WebhookResponse Method.SendMessage SendMessagePayload {chat_id = getChatId update, text = "Sali du!"})
+    then return (WebhookResponse Method.SendMessage SendMessagePayload {chat_id = getChatId update, text = convertText $ getText update})
     else throwError err401
 
 getChatId :: Update -> Int
 getChatId update
-  | Just message <- Update.message update = Chat.id (Message.chat message)
+  | Just message <- Update.message update = Chat.id . Message.chat $ message
   | otherwise = 0
+
+getText :: Update -> Text
+getText update
+  | Just message <- Update.message update = fromMaybe "" (Message.text message)
+  | otherwise = ""
