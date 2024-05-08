@@ -1,18 +1,18 @@
 module DitsAndDahs.MorseCode
-  ( toMorseCode,
-    fromMorseCode,
+  ( textToMorseCode,
+    morseCodeToText,
   )
 where
 
 import Data.Char (toUpper)
-import Data.Text (Text, concatMap, pack, words)
-import Prelude hiding (concatMap, words)
+import Data.Text (Text, pack, unpack)
+import qualified Data.Text as Text (concatMap, intercalate, words)
 
-toMorseCode :: Text -> Text
-toMorseCode = concatMap (charToMorse . toUpper)
+textToMorseCode :: Text -> Text
+textToMorseCode = Text.intercalate " " . map (charToMorse . toUpper) . unpack
 
-fromMorseCode :: Text -> Text
-fromMorseCode = pack . map morseToChar . words
+morseCodeToText :: Text -> Text
+morseCodeToText = pack . map morseToChar . Text.words
 
 charToMorse :: Char -> Text
 charToMorse 'A' = ".-"
@@ -51,12 +51,12 @@ charToMorse '6' = "-...."
 charToMorse '7' = "--..."
 charToMorse '8' = "---.."
 charToMorse '9' = "----."
-charToMorse ' ' = " "
-charToMorse _ = ""
+charToMorse ' ' = "/"
+charToMorse _ = "\0"
 
 morseToChar :: Text -> Char
-morseToChar "-..." = 'B'
 morseToChar ".-" = 'A'
+morseToChar "-..." = 'B'
 morseToChar "-.-." = 'C'
 morseToChar "-.." = 'D'
 morseToChar "." = 'E'
@@ -91,4 +91,5 @@ morseToChar "-...." = '6'
 morseToChar "--..." = '7'
 morseToChar "---.." = '8'
 morseToChar "----." = '9'
-morseToChar _ = ' '
+morseToChar "/" = ' '
+morseToChar _ = '\0'
