@@ -1,0 +1,22 @@
+name: "Release"
+
+on:
+  release:
+    types:
+      - released
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    uses: ./.github/workflows/reusable_workflow_build.yml
+
+  deploy:
+    uses: ./.github/workflows/reusable_workflow_deploy.yml
+    secrets: inherit
+    needs:
+      - build
+    with:
+      environment: "Production"

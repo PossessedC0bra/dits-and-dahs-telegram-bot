@@ -1,0 +1,58 @@
+name: "Deploy"
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    name: "Deploy"
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ vars.TELEGRAM_BOT_URL }}
+    env:
+      TF_IN_AUTOMATION: true
+      AWS_ACCESS_KEY_ID: ${{ vars.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    defaults:
+      run:
+        working-directory: ./terraform/environments/${{ vars.TERRAFORM_ENVIRONMENT }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Download binary"
+        uses: actions/download-artifact@v4
+        with:
+          name: "bootstrap"
+          path: ./terraform/environments/${{ vars.TERRAFORM_ENVIRONMENT }}/files
+
+      - name: "Setup Terraform"
+        uses: hashicorp/setup-terraform@v3
+
+      - name: "Terraform init"
+        run: terraform init
+
+      - name: Select or create terraform workspace
+        run: terraform workspace select -or-create ${{ vars.TERRAFORM_ENVIRONMENT }}
+
+      - name: "Terraform apply"
+        id: apply
+        run: terraform apply -auto-approve
+        env:
+          TF_VAR_telegram_bot_secret_token: ${{ secrets.TELEGRAM_BOT_SECRET_TOKEN }}
+
+      - name: Terraform output
+        id: output
+        run: |
+          echo "webhook_url=$(terraform output -raw webhook_url)" >> $GITHUB_OUTPUT
+
+      - name: "Set telegram bot api webhook"
+        env:
+          TELEGRAM_BOT_TOKEN: secrets.TELEGRAM_BOT_TOKEN
+        if: "${{ env.TELEGRAM_BOT_TOKEN != '' }}"
+        run: |
+          curl -v -X POST -G "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/setWebhook" --data-urlencode "url=${{ steps.output.outputs.webhook_url }}" --data-urlencode "secret_token=${{ secrets.TELEGRAM_BOT_SECRET_TOKEN }}"

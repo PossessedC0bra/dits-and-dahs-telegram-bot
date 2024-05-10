@@ -1,0 +1,163 @@
+name: "Pull Request"
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PULL_REQUEST_ID: ${{ github.event.number }}
+
+jobs:
+  build:
+    uses: ./.github/workflows/reusable_workflow_build.yml
+
+  terraform:
+    name: "Terraform"
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    permissions:
+      pull-requests: write # for robburger/terraform-pr-commenter & peter-evans/create-or-update-comment to write pull request comments
+      security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TF_IN_AUTOMATION: true
+      AWS_ACCESS_KEY_ID: ${{ vars.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    defaults:
+      run:
+        working-directory: ./terraform/environments/pr
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Download binary"
+        uses: actions/download-artifact@v4
+        with:
+          name: "bootstrap"
+          path: ./terraform/environments/pr/files
+
+      - name: "Setup Terraform"
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform format
+        id: fmt
+        run: terraform fmt -check -recursive
+        continue-on-error: true
+
+      - name: Terraform format comment
+        if: always() && (steps.fmt.outcome == 'success' || steps.fmt.outcome == 'failure')
+        uses: GetTerminus/terraform-pr-commenter@v3
+        with:
+          commenter_type: fmt
+          commenter_input: ${{ format('{0}{1}', steps.fmt.outputs.stdout, steps.fmt.outputs.stderr) }}
+          commenter_exitcode: ${{ steps.fmt.outputs.exitcode }}
+
+      - name: Terraform init
+        id: init
+        run: terraform init
+
+      - name: Terraform init comment
+        if: always() && (steps.init.outcome == 'success' || steps.init.outcome == 'failure')
+        uses: GetTerminus/terraform-pr-commenter@v3
+        with:
+          commenter_type: init
+          commenter_input: ${{ format('{0}{1}', steps.init.outputs.stdout, steps.init.outputs.stderr) }}
+          commenter_exitcode: ${{ steps.init.outputs.exitcode }}
+
+      - name: Select or create terraform workspace
+        run: terraform workspace select -or-create pr-${{ github.event.number }}
+
+      - name: Terraform validate
+        id: validate
+        run: terraform validate
+
+      - name: Terraform validate comment
+        if: always() && (steps.validate.outcome == 'success' || steps.validate.outcome == 'failure')
+        uses: GetTerminus/terraform-pr-commenter@v3
+        with:
+          commenter_type: validate
+          commenter_input: ${{ format('{0}{1}', steps.validate.outputs.stdout, steps.validate.outputs.stderr) }}
+          commenter_exitcode: ${{ steps.validate.outputs.exitcode }}
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_wrapper: true
+
+      - name: Init TFLint
+        run: tflint --init
+
+      - name: Run TFLint
+        id: tflint
+        run: tflint -f compact
+
+      - name: TFLint comment
+        if: always() && (steps.tflint.outcome == 'success' || steps.tflint.outcome == 'failure')
+        uses: GetTerminus/terraform-pr-commenter@v3
+        with:
+          commenter_type: tflint
+          commenter_input: ${{ format('{0}{1}', steps.tflint.outputs.stdout, steps.tflint.outputs.stderr) }}
+          commenter_exitcode: ${{ steps.tflint.outputs.exitcode }}
+
+      # - name: Run Trivy vulnerability scanner in IaC mode
+      #   id: security_scan
+      #   uses: aquasecurity/trivy-action@master
+      #   with:
+      #     scan-type: "config"
+      #     severity: "CRITICAL,HIGH"
+      #     ignore-unfixed: true
+      #     hide-progress: true
+      #     format: "sarif"
+      #     output: "trivy-results.sarif"
+      #     exit-code: "1"
+
+      # - name: Upload Trivy scan results to GitHub Security tab
+      #   if: always() && (steps.security_scan.outcome == 'success' || steps.security_scan.outcome == 'failure')
+      #   uses: github/codeql-action/upload-sarif@v3
+      #   with:
+      #     sarif_file: "trivy-results.sarif"
+
+      - name: Terraform plan
+        id: plan
+        run: terraform plan -out workspace.plan
+        env:
+          TF_VAR_environment_suffix: ${{ env.PULL_REQUEST_ID }}
+          TF_VAR_telegram_bot_secret_token: ${{ secrets.TELEGRAM_BOT_SECRET_TOKEN }}
+
+      - name: Terraform plan comment
+        if: always() && (steps.plan.outcome == 'success' || steps.plan.outcome == 'failure')
+        uses: GetTerminus/terraform-pr-commenter@v3
+        with:
+          commenter_type: plan
+          commenter_input: ${{ format('{0}{1}', steps.plan.outputs.stdout, steps.plan.outputs.stderr) }}
+          commenter_exitcode: ${{ steps.plan.outputs.exitcode }}\
+
+      - name: Terraform apply
+        id: apply
+        run: terraform apply workspace.plan
+        env:
+          TF_VAR_environment_suffix: ${{ env.PULL_REQUEST_ID }}
+          TF_VAR_telegram_bot_secret_token: ${{ secrets.TELEGRAM_BOT_SECRET_TOKEN }}
+
+      - name: Terraform output
+        id: output
+        run: |
+          echo "webhook_url=$(terraform output -raw webhook_url)" >> $GITHUB_OUTPUT
+
+      - name: Post PR Envrionment comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: pr_environment
+          recreate: true
+          message: |
+            ### PR Environment
+            The ephemeral environment for this PR is deployed at: ${{ steps.output.outputs.webhook_url }}
