@@ -18,7 +18,7 @@ env:
 
 jobs:
   build:
-    uses: ./.github/workflows/build_job.yml
+    uses: ./.github/workflows/reusable_workflow_build.yml
 
   terraform:
     name: "Terraform"

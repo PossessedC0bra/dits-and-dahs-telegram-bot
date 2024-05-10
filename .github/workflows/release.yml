@@ -11,12 +11,12 @@ concurrency:
 
 jobs:
   build:
-    uses: ./.github/workflows/build_job.yml
+    uses: ./.github/workflows/reusable_workflow_build.yml
 
   deploy:
-    uses: ./.github/workflows/deploy_job.yml
+    uses: ./.github/workflows/reusable_workflow_deploy.yml
+    secrets: inherit
     needs:
       - build
-    secrets: inherit
     with:
       environment: "Production"
