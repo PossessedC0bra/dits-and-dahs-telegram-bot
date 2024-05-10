@@ -26,6 +26,8 @@ library
   exposed-modules:
       API
       Data.Aeson.Utilities.Options
+      DitsAndDahs.Bot
+      DitsAndDahs.MorseCode
       Telegram.Bot.API.Types.Chat
       Telegram.Bot.API.Types.EntityType
       Telegram.Bot.API.Types.Message
