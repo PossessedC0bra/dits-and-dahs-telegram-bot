@@ -13,7 +13,6 @@ author:         Yannick Koller
 maintainer:     koller.yannick@gmail.com
 copyright:      2023 Yannick Koller
 license:        BSD3
-license-file:   LICENSE
 build-type:     Simple
 tested-with:
     GHC == 9.6.4
@@ -120,6 +119,7 @@ test-suite dits-and-dahs-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      DitsAndDahs.MorseCodeSpec
       Paths_dits_and_dahs_telegram_bot
   hs-source-dirs:
       test
@@ -139,4 +139,5 @@ test-suite dits-and-dahs-test
   build-depends:
       base
     , dits-and-dahs-telegram-bot
+    , hspec
   default-language: Haskell2010

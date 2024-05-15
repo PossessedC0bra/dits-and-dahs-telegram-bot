@@ -87,3 +87,4 @@ tests:
     dependencies:
       - dits-and-dahs-telegram-bot
       - base
+      - hspec
