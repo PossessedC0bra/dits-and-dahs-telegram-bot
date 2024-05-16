@@ -20,11 +20,21 @@ jobs:
   build:
     uses: ./.github/workflows/reusable_workflow_build.yml
 
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: haskell-actions/hlint-setup@v2
+      - uses: haskell-actions/hlint-run@v2
+        with:
+          fail-on: warning
+
   terraform:
     name: "Terraform"
     runs-on: ubuntu-latest
     needs:
       - build
+      - lint
     permissions:
       pull-requests: write # for robburger/terraform-pr-commenter & peter-evans/create-or-update-comment to write pull request comments
       security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
