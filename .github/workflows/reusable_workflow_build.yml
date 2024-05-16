@@ -13,7 +13,7 @@ jobs:
       - name: "Setup stack and build binary"
         uses: freckle/stack-action@v5
         with:
-          stack-build-arguments: --copy-bins dits-and-dahs-telegram-bot:exe:bootstrap
+          stack-build-arguments: --fast --pedantic --copy-bins
 
       - name: "Upload binary"
         uses: actions/upload-artifact@v4
