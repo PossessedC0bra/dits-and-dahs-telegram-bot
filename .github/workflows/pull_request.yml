@@ -17,17 +17,22 @@ env:
   PULL_REQUEST_ID: ${{ github.event.number }}
 
 jobs:
-  build:
-    uses: ./.github/workflows/reusable_workflow_build.yml
-
   lint:
+    name: "Lint"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: haskell-actions/hlint-setup@v2
-      - uses: haskell-actions/hlint-run@v2
+
+      - name: Run HLint
+        uses: haskell-actions/hlint-run@v2
         with:
           fail-on: warning
+
+  build:
+    name: "Build & Test"
+    uses: ./.github/workflows/reusable_workflow_build.yml
 
   terraform:
     name: "Terraform"
