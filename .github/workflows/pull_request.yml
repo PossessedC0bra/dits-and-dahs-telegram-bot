@@ -2,8 +2,6 @@ name: "Pull Request"
 
 on:
   pull_request:
-    branches:
-      - main
     types:
       - opened
       - reopened
@@ -12,9 +10,6 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
-env:
-  PULL_REQUEST_ID: ${{ github.event.number }}
 
 jobs:
   lint:
@@ -41,8 +36,10 @@ jobs:
       - lint
       - build
     permissions:
-      pull-requests: write # for robburger/terraform-pr-commenter & peter-evans/create-or-update-comment to write pull request comments
-      security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
+      pull-requests: write # for GetTerminus/terraform-pr-commenter to write pull request comments
+    environment:
+      name: pr-${{ github.event.number }}
+      url: ${{ steps.output.outputs.webhook_url }}
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       TF_IN_AUTOMATION: true
@@ -123,29 +120,11 @@ jobs:
           commenter_input: ${{ format('{0}{1}', steps.tflint.outputs.stdout, steps.tflint.outputs.stderr) }}
           commenter_exitcode: ${{ steps.tflint.outputs.exitcode }}
 
-      # - name: Run Trivy vulnerability scanner in IaC mode
-      #   id: security_scan
-      #   uses: aquasecurity/trivy-action@master
-      #   with:
-      #     scan-type: "config"
-      #     severity: "CRITICAL,HIGH"
-      #     ignore-unfixed: true
-      #     hide-progress: true
-      #     format: "sarif"
-      #     output: "trivy-results.sarif"
-      #     exit-code: "1"
-
-      # - name: Upload Trivy scan results to GitHub Security tab
-      #   if: always() && (steps.security_scan.outcome == 'success' || steps.security_scan.outcome == 'failure')
-      #   uses: github/codeql-action/upload-sarif@v3
-      #   with:
-      #     sarif_file: "trivy-results.sarif"
-
       - name: Terraform plan
         id: plan
         run: terraform plan -out workspace.plan
         env:
-          TF_VAR_environment_suffix: ${{ env.PULL_REQUEST_ID }}
+          TF_VAR_environment_suffix: ${{ github.event.number }}
           TF_VAR_telegram_bot_secret_token: ${{ secrets.TELEGRAM_BOT_SECRET_TOKEN }}
 
       - name: Terraform plan comment
@@ -160,19 +139,10 @@ jobs:
         id: apply
         run: terraform apply workspace.plan
         env:
-          TF_VAR_environment_suffix: ${{ env.PULL_REQUEST_ID }}
+          TF_VAR_environment_suffix: ${{ github.event.number }}
           TF_VAR_telegram_bot_secret_token: ${{ secrets.TELEGRAM_BOT_SECRET_TOKEN }}
 
       - name: Terraform output
         id: output
         run: |
           echo "webhook_url=$(terraform output -raw webhook_url)" >> $GITHUB_OUTPUT
-
-      - name: Post PR Envrionment comment
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          header: pr_environment
-          recreate: true
-          message: |
-            ### PR Environment
-            The ephemeral environment for this PR is deployed at: ${{ steps.output.outputs.webhook_url }}
