@@ -6,7 +6,7 @@ where
 
 import Data.Char (toUpper)
 import Data.Text (Text, pack, unpack)
-import qualified Data.Text as Text (concatMap, intercalate, words)
+import qualified Data.Text as Text (intercalate, words)
 
 textToMorseCode :: Text -> Text
 textToMorseCode = Text.intercalate " " . map (charToMorse . toUpper) . unpack
