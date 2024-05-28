@@ -1,6 +1,11 @@
 
 resource "aws_api_gateway_rest_api" "dits_and_dahs_telegram_bot" {
   name = "dits-and-dahs-telegram-bot-${var.environment}"
+
+  tags = {
+    Environment = var.environment
+    Service     = "dits-and-dahs-telegram-bot"
+  }
 }
 
 resource "aws_api_gateway_resource" "updates" {
@@ -75,11 +80,21 @@ resource "aws_lambda_function" "dits_and_dahs_telegram_bot" {
       SECRET_TOKEN = var.telegram_bot_secret_token
     }
   }
+
+  tags = {
+    Environment = var.environment
+    Service     = "dits-and-dahs-telegram-bot"
+  }
 }
 
 resource "aws_iam_role" "execute_lambda" {
   name               = "DitsAndDahsTelegramBotLambdaExecutionRole-${var.environment}"
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
+
+  tags = {
+    Environment = var.environment
+    Service     = "dits-and-dahs-telegram-bot"
+  }
 }
 
 data "aws_iam_policy_document" "assume_role" {
